@@ -16,7 +16,7 @@ async function handler(cmd: Command) {
         data: {
           id: cmd.data.id,
           amount: cmd.data.amount,
-          transactionId: cmd.data.transactionId ?? uuidv4(),
+          transactionId: cmd.data.transactionId,
           time: cmd.data.time,
         },
       });
@@ -32,7 +32,7 @@ async function handler(cmd: Command) {
           data: {
             id: cmd.data.id,
             amount: cmd.data.amount,
-            transactionId: cmd.data.transactionId ?? uuidv4(),
+            transactionId: cmd.data.transactionId,
             time: cmd.data.time,
           },
         });

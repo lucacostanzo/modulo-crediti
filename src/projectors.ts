@@ -2,7 +2,7 @@ import { Message, runProjector } from "@keix/message-store-client";
 import { EventType } from "./types";
 import { DateTime } from "luxon";
 
-export async function runBalanceProjector(IdAmount: string): Promise<number> {
+export async function runBalanceProjector(idAmount: string): Promise<number> {
   let date = new Date();
   const MAX_USE_CREDITS_DELAY = date.setMonth(date.getMonth() - 12);
   function reducer(res: number, next: Message) {
@@ -23,14 +23,14 @@ export async function runBalanceProjector(IdAmount: string): Promise<number> {
 
   return runProjector(
     {
-      streamName: "creditAccount-" + IdAmount,
+      streamName: "creditAccount-" + idAmount,
     },
     reducer,
     0
   );
 }
 
-export async function runGiftCardProjector(IdCard: string) {
+export async function runGiftCardProjector(id: string) {
   function reducer(res: boolean, next: Message) {
     if (next.type == EventType.GIFT_CARD_ADDED) {
       return true;
@@ -42,7 +42,7 @@ export async function runGiftCardProjector(IdCard: string) {
   }
   return runProjector(
     {
-      streamName: "giftCard-" + IdCard,
+      streamName: "giftCard-" + id,
     },
     reducer,
     false

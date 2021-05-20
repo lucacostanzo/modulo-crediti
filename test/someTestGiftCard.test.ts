@@ -10,13 +10,13 @@ import {
 } from "../src/projectors";
 
 it("should add a gift card", async () => {
-  let IdCard = uuidv4();
+  let idCard = uuidv4();
   testUtils.setupMessageStore([
     {
       type: CommandType.ADD_GIFT_CARD,
-      stream_name: "giftCard:command-" + IdCard,
+      stream_name: "giftCard:command-" + idCard,
       data: {
-        id: IdCard,
+        id: idCard,
         name: "Card1",
         description: "la prima carta",
         image_url: "www.card1.it",
@@ -25,24 +25,22 @@ it("should add a gift card", async () => {
     },
   ]);
 
-  runGiftCard();
-
-  await testUtils.waitForExpect(async () => {
-    let eventsCard = testUtils.getStreamMessages("giftCard-" + IdCard);
+  await testUtils.expectIdempotency(runGiftCard, async () => {
+    let eventsCard = testUtils.getStreamMessages("giftCard-" + idCard);
     expect(eventsCard).toHaveLength(1);
     expect(eventsCard[0].type).toEqual(EventType.GIFT_CARD_ADDED);
-    expect(eventsCard[0].data.id).toEqual(IdCard);
+    expect(eventsCard[0].data.id).toEqual(idCard);
   });
 });
 
 it("should remove a gift card", async () => {
-  let IdCard = uuidv4();
+  let idCard = uuidv4();
   testUtils.setupMessageStore([
     {
       type: EventType.GIFT_CARD_ADDED,
-      stream_name: "giftCard-" + IdCard,
+      stream_name: "giftCard-" + idCard,
       data: {
-        id: IdCard,
+        id: idCard,
         name: "Card1",
         description: "la prima carta",
         image_url: "www.card1.it",
@@ -51,9 +49,9 @@ it("should remove a gift card", async () => {
     },
     {
       type: CommandType.REMOVE_GIFT_CARD,
-      stream_name: "giftCard:command-" + IdCard,
+      stream_name: "giftCard:command-" + idCard,
       data: {
-        id: IdCard,
+        id: idCard,
         name: "Card1",
         description: "la prima carta",
         image_url: "www.card1.it",
@@ -62,26 +60,24 @@ it("should remove a gift card", async () => {
     },
   ]);
 
-  runGiftCard();
-
-  await testUtils.waitForExpect(async () => {
-    let eventsCard = testUtils.getStreamMessages("giftCard-" + IdCard);
+  await testUtils.expectIdempotency(runGiftCard, async () => {
+    let eventsCard = testUtils.getStreamMessages("giftCard-" + idCard);
     expect(eventsCard).toHaveLength(2);
     expect(eventsCard[0].type).toEqual(EventType.GIFT_CARD_ADDED);
-    expect(eventsCard[0].data.id).toEqual(IdCard);
+    expect(eventsCard[0].data.id).toEqual(idCard);
     expect(eventsCard[1].type).toEqual(EventType.GIFT_CARD_REMOVED);
-    expect(eventsCard[1].data.id).toEqual(IdCard);
+    expect(eventsCard[1].data.id).toEqual(idCard);
   });
 });
 
 it("should check if a gift card exist", async () => {
-  let IdCard = uuidv4();
+  let idCard = uuidv4();
   testUtils.setupMessageStore([
     {
       type: EventType.GIFT_CARD_ADDED,
-      stream_name: "giftCard-" + IdCard,
+      stream_name: "giftCard-" + idCard,
       data: {
-        id: IdCard,
+        id: idCard,
         name: "Card1",
         description: "la prima carta",
         image_url: "www.card1.it",
@@ -90,25 +86,23 @@ it("should check if a gift card exist", async () => {
     },
   ]);
 
-  runGiftCard();
-
-  await testUtils.waitForExpect(async () => {
-    let eventsCard = testUtils.getStreamMessages("giftCard-" + IdCard);
+  await testUtils.expectIdempotency(runGiftCard, async () => {
+    let eventsCard = testUtils.getStreamMessages("giftCard-" + idCard);
     expect(eventsCard).toHaveLength(1);
     expect(eventsCard[0].type).toEqual(EventType.GIFT_CARD_ADDED);
-    expect(eventsCard[0].data.id).toEqual(IdCard);
-    expect(await runGiftCardProjector(IdCard)).toEqual(true);
+    expect(eventsCard[0].data.id).toEqual(idCard);
+    expect(await runGiftCardProjector(idCard)).toEqual(true);
   });
 });
 
 it("should check if a gift card not exist", async () => {
-  let IdCard = uuidv4();
+  let idCard = uuidv4();
   testUtils.setupMessageStore([
     {
       type: EventType.GIFT_CARD_ADDED,
-      stream_name: "giftCard-" + IdCard,
+      stream_name: "giftCard-" + idCard,
       data: {
-        id: IdCard,
+        id: idCard,
         name: "Card1",
         description: "la prima carta",
         image_url: "www.card1.it",
@@ -117,25 +111,23 @@ it("should check if a gift card not exist", async () => {
     },
   ]);
 
-  runGiftCard();
-
-  await testUtils.waitForExpect(async () => {
-    let eventsCard = testUtils.getStreamMessages("giftCard-" + IdCard);
+  await testUtils.expectIdempotency(runGiftCard, async () => {
+    let eventsCard = testUtils.getStreamMessages("giftCard-" + idCard);
     expect(eventsCard).toHaveLength(1);
     expect(eventsCard[0].type).toEqual(EventType.GIFT_CARD_ADDED);
-    expect(eventsCard[0].data.id).toEqual(IdCard);
-    expect(await runGiftCardProjector(IdCard)).toEqual(true);
+    expect(eventsCard[0].data.id).toEqual(idCard);
+    expect(await runGiftCardProjector(idCard)).toEqual(true);
   });
 });
 
 it("should fail add card", async () => {
-  let IdCard = uuidv4();
+  let idCard = uuidv4();
   testUtils.setupMessageStore([
     {
       type: EventType.GIFT_CARD_ADDED,
-      stream_name: "giftCard-" + IdCard,
+      stream_name: "giftCard-" + idCard,
       data: {
-        id: IdCard,
+        id: idCard,
         name: "Card1",
         description: "la prima carta",
         image_url: "www.card1.it",
@@ -144,9 +136,9 @@ it("should fail add card", async () => {
     },
     {
       type: CommandType.ADD_GIFT_CARD,
-      stream_name: "giftCard:command-" + IdCard,
+      stream_name: "giftCard:command-" + idCard,
       data: {
-        id: IdCard,
+        id: idCard,
         name: "Card1",
         description: "la prima carta",
         image_url: "www.card1.it",
@@ -155,54 +147,63 @@ it("should fail add card", async () => {
     },
   ]);
 
-  runGiftCard();
-
-  await testUtils.waitForExpect(async () => {
-    let eventsCard = testUtils.getStreamMessages("giftCard-" + IdCard);
+  await testUtils.expectIdempotency(runGiftCard, async () => {
+    let eventsCard = testUtils.getStreamMessages("giftCard-" + idCard);
     expect(eventsCard).toHaveLength(2);
     expect(eventsCard[0].type).toEqual(EventType.GIFT_CARD_ADDED);
-    expect(eventsCard[0].data.id).toEqual(IdCard);
+    expect(eventsCard[0].data.id).toEqual(idCard);
     expect(eventsCard[1].type).toEqual(EventType.GIFT_CARD_ADDED_ERROR);
-    expect(eventsCard[1].data.id).toEqual(IdCard);
-    expect(await runGiftCardProjector(IdCard)).toEqual(true);
+    expect(eventsCard[1].data.id).toEqual(idCard);
+    expect(await runGiftCardProjector(idCard)).toEqual(true);
   });
 });
 
 it("should fail remove card", async () => {
-  let IdCard = uuidv4();
+  let idCard = uuidv4();
+  let idCard2 = uuidv4();
   testUtils.setupMessageStore([
     {
-      type: CommandType.REMOVE_GIFT_CARD,
-      stream_name: "giftCard:command-" + IdCard,
+      type: EventType.GIFT_CARD_ADDED,
+      stream_name: "giftCard-" + idCard,
       data: {
-        id: IdCard,
+        id: idCard,
         name: "Card1",
         description: "la prima carta",
         image_url: "www.card1.it",
         amounts_avaiable: [5, 15, 25, 50, 100],
       },
     },
+    {
+      type: CommandType.REMOVE_GIFT_CARD,
+      stream_name: "giftCard:command-" + idCard2,
+      data: {
+        id: idCard2,
+        name: "Card2",
+        description: "la seconda carta",
+        image_url: "www.card2.it",
+        amounts_avaiable: [5, 15, 25, 50, 100],
+      },
+    },
   ]);
 
-  runGiftCard();
-
-  await testUtils.waitForExpect(async () => {
-    let eventsCard = testUtils.getStreamMessages("giftCard-" + IdCard);
-    expect(eventsCard).toHaveLength(1);
-    expect(eventsCard[0].type).toEqual(EventType.GIFT_CARD_REMOVED_ERROR);
-    expect(eventsCard[0].data.id).toEqual(IdCard);
-    expect(await runGiftCardProjector(IdCard)).toEqual(false);
+  await testUtils.expectIdempotency(runGiftCard, async () => {
+    let eventsCard = testUtils.getStreamMessages("giftCard");
+    expect(eventsCard).toHaveLength(2);
+    expect(eventsCard[0].type).toEqual(EventType.GIFT_CARD_ADDED);
+    expect(eventsCard[0].data.id).toEqual(idCard);
+    expect(eventsCard[1].type).toEqual(EventType.GIFT_CARD_REMOVED_ERROR);
+    expect(eventsCard[1].data.id).toEqual(idCard2);
   });
 });
 
 it("should check if removed", async () => {
-  let IdCard = uuidv4();
+  let idCard = uuidv4();
   testUtils.setupMessageStore([
     {
       type: EventType.GIFT_CARD_ADDED,
-      stream_name: "giftCard-" + IdCard,
+      stream_name: "giftCard-" + idCard,
       data: {
-        id: IdCard,
+        id: idCard,
         name: "Card1",
         description: "la prima carta",
         image_url: "www.card1.it",
@@ -211,9 +212,9 @@ it("should check if removed", async () => {
     },
     {
       type: EventType.GIFT_CARD_REMOVED,
-      stream_name: "giftCard-" + IdCard,
+      stream_name: "giftCard-" + idCard,
       data: {
-        id: IdCard,
+        id: idCard,
         name: "Card1",
         description: "la prima carta",
         image_url: "www.card1.it",
@@ -222,31 +223,29 @@ it("should check if removed", async () => {
     },
   ]);
 
-  runGiftCard();
-
-  await testUtils.waitForExpect(async () => {
-    expect(await runGiftCardProjector(IdCard)).toEqual(false);
+  await testUtils.expectIdempotency(runGiftCard, async () => {
+    expect(await runGiftCardProjector(idCard)).toEqual(false);
   });
 });
 
 it("should redeem gift card", async () => {
-  let IdCard = uuidv4();
-  let IdAccount = uuidv4();
-  let IdTransaction = uuidv4();
+  let idCard = uuidv4();
+  let idAccount = uuidv4();
+  let idTransaction = uuidv4();
   testUtils.setupMessageStore([
     {
       type: EventType.CREDITS_EARNED,
-      stream_name: "creditAccount-" + IdAccount,
+      stream_name: "creditAccount-" + idAccount,
       data: {
-        id: IdAccount,
+        id: idAccount,
         amount: 150,
       },
     },
     {
       type: EventType.GIFT_CARD_ADDED,
-      stream_name: "giftCard-" + IdCard,
+      stream_name: "giftCard-" + idCard,
       data: {
-        id: IdCard,
+        id: idCard,
         name: "Card1",
         description: "la prima carta",
         image_url: "www.card1.it",
@@ -255,60 +254,58 @@ it("should redeem gift card", async () => {
     },
     {
       type: CommandType.REDEEM_GIFT_CARD,
-      stream_name: "giftCardTransaction:command-" + IdTransaction,
+      stream_name: "giftCardTransaction:command-" + idTransaction,
       data: {
-        transactionId: IdTransaction,
-        id: IdCard,
-        IdUser: IdAccount,
+        transactionId: idTransaction,
+        id: idCard,
+        IdUser: idAccount,
         amount: 15,
       },
     },
     {
       type: EventType.CREDITS_USED,
-      stream_name: "creditAccount-" + IdAccount,
+      stream_name: "creditAccount-" + idAccount,
       data: {
-        id: IdAccount,
+        id: idAccount,
         amount: 15,
       },
     },
   ]);
 
-  runGiftCard();
-
-  await testUtils.waitForExpect(async () => {
-    expect(await runGiftCardProjector(IdCard)).toEqual(true);
-    let eventsCard = testUtils.getStreamMessages("giftCard-" + IdCard);
+  await testUtils.expectIdempotency(runGiftCard, async () => {
+    expect(await runGiftCardProjector(idCard)).toEqual(true);
+    let eventsCard = testUtils.getStreamMessages("giftCard-" + idCard);
     let eventsCredits = testUtils.getStreamMessages(
-      "creditAccount-" + IdAccount
+      "creditAccount-" + idAccount
     );
     let eventsCardTransaction = testUtils.getStreamMessages(
-      "giftCardTransaction-" + IdTransaction
+      "giftCardTransaction-" + idTransaction
     );
     expect(eventsCredits).toHaveLength(2);
     expect(eventsCard).toHaveLength(1);
     expect(eventsCardTransaction).toHaveLength(1);
     expect(eventsCredits[0].type).toEqual(EventType.CREDITS_EARNED);
-    expect(eventsCredits[0].data.id).toEqual(IdAccount);
+    expect(eventsCredits[0].data.id).toEqual(idAccount);
     expect(eventsCard[0].type).toEqual(EventType.GIFT_CARD_ADDED);
-    expect(eventsCard[0].data.id).toEqual(IdCard);
+    expect(eventsCard[0].data.id).toEqual(idCard);
     expect(eventsCardTransaction[0].type).toEqual(
       EventType.GIFT_CARD_REDEEM_PENDING
     );
-    expect(eventsCardTransaction[0].data.id).toEqual(IdTransaction);
+    expect(eventsCardTransaction[0].data.id).toEqual(idTransaction);
     expect(eventsCredits[1].type).toEqual(EventType.CREDITS_USED);
-    expect(eventsCredits[1].data.id).toEqual(IdAccount);
+    expect(eventsCredits[1].data.id).toEqual(idAccount);
   });
 });
 
 it("should return false if gift card is not pending", async () => {
-  let IdCard = uuidv4();
-  let IdTransaction = uuidv4();
+  let idCard = uuidv4();
+  let idTransaction = uuidv4();
   testUtils.setupMessageStore([
     {
       type: EventType.GIFT_CARD_ADDED,
-      stream_name: "giftCardTransaction-" + IdTransaction,
+      stream_name: "giftCardTransaction-" + idTransaction,
       data: {
-        id: IdCard,
+        id: idCard,
         name: "Card1",
         description: "la prima carta",
         image_url: "www.card1.it",
@@ -316,47 +313,47 @@ it("should return false if gift card is not pending", async () => {
       },
     },
   ]);
-  await testUtils.waitForExpect(async () => {
-    expect(await runPendingProjector(IdTransaction)).toEqual(false);
+  await testUtils.expectIdempotency(runGiftCard, async () => {
+    expect(await runPendingProjector(idTransaction)).toEqual(false);
   });
 });
 
 it("should return true if gift card is pending", async () => {
-  let IdTransaction = uuidv4();
+  let idTransaction = uuidv4();
   testUtils.setupMessageStore([
     {
       type: EventType.GIFT_CARD_REDEEM_PENDING,
-      stream_name: "giftCardTransaction-" + IdTransaction,
+      stream_name: "giftCardTransaction-" + idTransaction,
       data: {},
     },
   ]);
-  await testUtils.waitForExpect(async () => {
-    expect(await runPendingProjector(IdTransaction)).toEqual(true);
+  await testUtils.expectIdempotency(runGiftCard, async () => {
+    expect(await runPendingProjector(idTransaction)).toEqual(true);
   });
 });
 
 it("should return true if gift card is processing", async () => {
-  let IdTransaction = uuidv4();
+  let idTransaction = uuidv4();
   testUtils.setupMessageStore([
     {
       type: EventType.GIFT_CARD_REDEEM_PROCESSING,
-      stream_name: "giftCardTransaction-" + IdTransaction,
-      data: { id: IdTransaction },
+      stream_name: "giftCardTransaction-" + idTransaction,
+      data: { id: idTransaction },
     },
   ]);
 
-  expect(await runProcessingProjector(IdTransaction)).toEqual(true);
+  expect(await runProcessingProjector(idTransaction)).toEqual(true);
 });
 
 it("should return false if gift card is not processing", async () => {
-  let IdCard = uuidv4();
-  let IdTransaction = uuidv4();
+  let idCard = uuidv4();
+  let idTransaction = uuidv4();
   testUtils.setupMessageStore([
     {
       type: EventType.GIFT_CARD_ADDED,
-      stream_name: "giftCard-" + IdCard,
+      stream_name: "giftCard-" + idCard,
       data: {
-        id: IdCard,
+        id: idCard,
         name: "Amazon",
         description: "Carta per comprarti il frigo",
         image_url: "https://img.it",
@@ -365,36 +362,46 @@ it("should return false if gift card is not processing", async () => {
     },
     {
       type: EventType.GIFT_CARD_REDEEM_PENDING,
-      stream_name: "giftCardTransaction-" + IdTransaction,
+      stream_name: "giftCardTransaction-" + idTransaction,
       data: {
-        id: IdTransaction,
+        id: idTransaction,
       },
     },
   ]);
-  await testUtils.waitForExpect(async () => {
-    expect(await runProcessingProjector(IdTransaction)).toEqual(false);
+  await testUtils.expectIdempotency(runGiftCard, async () => {
+    expect(await runProcessingProjector(idTransaction)).toEqual(false);
   });
 });
 
 it("should return succeded if giftCard is correctly sent", async () => {
-  let IdTransaction = uuidv4();
-  let IdCard = uuidv4();
-  let IdAccount = uuidv4();
+  let idTransaction = uuidv4();
+  let idCard = uuidv4();
+  let idAccount = uuidv4();
   testUtils.setupMessageStore([
     {
       type: EventType.GIFT_CARD_REDEEM_PROCESSING,
-      stream_name: "giftCardTransaction-" + IdTransaction,
-      data: { transactionId: IdTransaction, id: IdCard, IdUser: IdAccount },
+      stream_name: "giftCardTransaction-" + idTransaction,
+      data: {
+        transactionId: idTransaction,
+        amount: 30,
+        id: idCard,
+        IdUser: idAccount,
+      },
     },
     {
       type: CommandType.DELIVERY_GIFT_CARD,
-      stream_name: "giftCardTransaction:command-" + IdTransaction,
-      data: { transactionId: IdTransaction, id: IdCard, IdUser: IdAccount },
+      stream_name: "giftCardTransaction:command-" + idTransaction,
+      data: {
+        transactionId: idTransaction,
+        amount: 30,
+        id: idCard,
+        IdUser: idAccount,
+      },
     },
   ]);
-  await testUtils.waitForExpect(async () => {
+  await testUtils.expectIdempotency(runGiftCard, async () => {
     let eventsCardTransaction = testUtils.getStreamMessages(
-      "giftCardTransaction-" + IdTransaction
+      "giftCardTransaction-" + idTransaction
     );
     expect(eventsCardTransaction).toHaveLength(2);
     expect(eventsCardTransaction[1].type).toEqual(
@@ -404,27 +411,27 @@ it("should return succeded if giftCard is correctly sent", async () => {
 });
 
 it("should return true if gift card is correctly sent", async () => {
-  let IdTransaction = uuidv4();
+  let idTransaction = uuidv4();
   testUtils.setupMessageStore([
     {
       type: EventType.GIFT_CARD_REDEEM_SUCCEDED,
-      stream_name: "giftCardTransaction-" + IdTransaction,
-      data: { id: IdTransaction },
+      stream_name: "giftCardTransaction-" + idTransaction,
+      data: { id: idTransaction },
     },
   ]);
 
-  expect(await runDeliveryProjector(IdTransaction)).toEqual(true);
+  expect(await runDeliveryProjector(idTransaction)).toEqual(true);
 });
 
 it("should return false if gift card is not correctly sent", async () => {
-  let IdTransaction = uuidv4();
+  let idTransaction = uuidv4();
   testUtils.setupMessageStore([
     {
       type: EventType.GIFT_CARD_REDEEM_FAILED,
-      stream_name: "giftCardTransaction-" + IdTransaction,
-      data: { id: IdTransaction },
+      stream_name: "giftCardTransaction-" + idTransaction,
+      data: { id: idTransaction },
     },
   ]);
 
-  expect(await runDeliveryProjector(IdTransaction)).toEqual(false);
+  expect(await runDeliveryProjector(idTransaction)).toEqual(false);
 });

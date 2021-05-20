@@ -14,11 +14,9 @@ import {
 import { Command, CommandType, EventType, Event } from "./types";
 
 async function handler(cmd: Command) {
-  /*
-  let lastCardTransaction = readLastMessage({
-    streamName: `giftCardTransaction-${cmd.data.id}`,
-  });
-  */
+  if (await isLastMessageAfterGlobalPosition(`giftCard-${cmd.data.id}`, cmd)) {
+    return;
+  }
   console.log(cmd);
   switch (cmd.type) {
     case CommandType.ADD_GIFT_CARD:
@@ -61,14 +59,18 @@ async function handler(cmd: Command) {
           },
         });
       } else {
-        return emitEvent({
-          category: "giftCard",
-          id: cmd.data.id,
-          event: EventType.GIFT_CARD_REMOVED_ERROR,
-          data: {
+        if (!(await runGiftCardProjector(cmd.data.id))) {
+          return emitEvent({
+            category: "giftCard",
             id: cmd.data.id,
-          },
-        });
+            event: EventType.GIFT_CARD_REMOVED_ERROR,
+            data: {
+              id: cmd.data.id,
+            },
+          });
+        } else {
+          return;
+        }
       }
 
     case CommandType.REDEEM_GIFT_CARD:
@@ -126,7 +128,6 @@ async function handler(cmd: Command) {
   }
 }
 
-/*
 export async function isLastMessageAfterGlobalPosition(
   streamName: string,
   cmd: Command
@@ -137,7 +138,7 @@ export async function isLastMessageAfterGlobalPosition(
   });
   return lastMsg && lastMsg.global_position > global_position;
 }
-*/
+
 async function handlerCredits(event: Event) {
   switch (event.type) {
     case EventType.CREDITS_USED:
